@@ -1,8 +1,6 @@
-
 const MODEL = "@cf/meta/llama-3.2-3b-instruct";
 
 export default {
-
     async fetch(request, env) {
 
         const headers = {
@@ -86,6 +84,15 @@ export default {
             }
 
 
+            /*
+             * IMPORTANTE:
+             * La conversación se envía como mensajes reales
+             * con roles separados.
+             *
+             * Esto evita que la IA invente líneas de
+             * "Usuario:" y "IA:" dentro de su respuesta.
+             */
+
             const recentHistory =
                 history
                     .filter(item =>
@@ -96,48 +103,79 @@ export default {
                         ) &&
                         typeof item.content === "string"
                     )
-                    .slice(-10);
+                    .slice(-12)
+                    .map(item => ({
+
+                        role:
+                            item.role,
+
+                        content:
+                            item.content
+
+                    }));
 
 
-            let conversation = "";
+            const messages = [
 
-            for (
-                const item
-                of recentHistory
-            ) {
+                {
+                    role: "system",
 
-                const role =
-                    item.role === "user"
-                        ? "Usuario"
-                        : "IA";
+                    content:
+                        "Eres IA, la inteligencia artificial " +
+                        "de conversación de HYISX. " +
 
+                        "Tu función es solamente conversar " +
+                        "con el usuario. " +
 
-                conversation +=
-                    `${role}: ${item.content}\n`;
+                        "Responde de forma natural, clara y útil. " +
 
-            }
+                        "Habla principalmente en español si el " +
+                        "usuario escribe en español. " +
 
+                        "MUY IMPORTANTE: nunca inventes mensajes " +
+                        "del usuario. " +
 
-            const prompt =
-                "Eres IA, la inteligencia artificial " +
-                "de conversación de HYISX.\n" +
-                "Responde de forma natural, clara y útil. " +
-                "Habla principalmente en español cuando " +
-                "el usuario escriba en español.\n\n" +
+                        "Nunca escribas mensajes empezando por " +
+                        "\"Usuario:\". " +
 
-                conversation +
+                        "Nunca escribas mensajes empezando por " +
+                        "\"IA:\" como si estuvieras simulando " +
+                        "varios turnos. " +
 
-                `Usuario: ${message}\n` +
-                "IA:";
+                        "Responde únicamente al último mensaje " +
+                        "real del usuario. " +
+
+                        "No continúes conversaciones inventadas. " +
+
+                        "No afirmes que el usuario dijo algo que " +
+                        "no aparece en la conversación recibida. " +
+
+                        "El marcador \"b6y\" puede utilizarse " +
+                        "como una marca de que un mensaje pertenece " +
+                        "al usuario, pero nunca debes inventarlo " +
+                        "ni usarlo para crear mensajes nuevos."
+
+                },
+
+                ...recentHistory,
+
+                {
+                    role: "user",
+
+                    content: message
+
+                }
+
+            ];
 
 
             const result =
                 await env.AI.run(
                     MODEL,
                     {
-                        prompt,
+                        messages,
                         max_tokens: 300,
-                        temperature: 0.7
+                        temperature: 0.5
                     }
                 );
 
@@ -176,6 +214,4 @@ export default {
         }
 
     }
-
 };
-
