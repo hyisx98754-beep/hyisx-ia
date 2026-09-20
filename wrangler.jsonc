@@ -1,0 +1,11 @@
+```json
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "hyisx-ia",
+  "main": "./src/index.js",
+  "compatibility_date": "2026-09-19",
+  "ai": {
+    "binding": "AI"
+  }
+}
+```
