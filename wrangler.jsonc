@@ -1,4 +1,4 @@
-```json
+
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "hyisx-ia",
@@ -8,4 +8,4 @@
     "binding": "AI"
   }
 }
-```
+
